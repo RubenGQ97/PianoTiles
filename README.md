@@ -8,124 +8,117 @@
 - En esta práctica se nos enseña diferentes herramientas para generar sonido, capturar sonido, dibujar las ondas, etc. La tarea final consiste en crear algún prototipo que integrara gráficos y sonido. En mi caso, he obtado por realizar un juego parecido al conocido juego PianoTiles para dispositivos moviles.
 
 ![](gifPiano.gif)
-
+- (Aunque en el gif no se aprecie, las teclas están señaladas)
 ### Desarrollo
 
-- Para la práctica se ha usado, ejemplos presentados en los videos explicativos y además se han usado hilos para crear las notas que se desplazan.
+- Para la práctica se ha usado, ejemplos y bibliotecas presentados en los videos explicativos y además se han usado hilos para crear las notas que se desplazan.
 
-
-
-```
-
-if(count>250){
-    count=0;
-    crear=true;
-  }
-  if(crear){
-    
-    objetos.clear();
-    
-    for (int i = 0; i < random(4,10); i++) {
-    crear=false;
-    objetos.add(new objeto(random(15, 45),cesta));
-  }
-  }
-
-  for (objeto obj : objetos) {
-    obj.display();
-    obj.caida();
-    
-  }
+- Clase para generar el sonido de las notas.
 
 ```
-```
-class Marcador{
 
-  float puntos,x;
-  public Marcador(float x){
-  this.x=x;
-  puntos=0;
-  }  
-  
-  void setX(float x2){
-    x=x+x2;
+class SineInstrument implements Instrument{
+  Oscil wave;
+  Line  ampEnv;
 
-  }
-    void reset(){
-    puntos=0;
-
-  }
-  float getPoints(){
-    return puntos;
-
+  SineInstrument( float frequency )
+  {
+    wave   = new Oscil( frequency, 0, Waves.SINE );
+    ampEnv = new Line();
+    ampEnv.patch( wave.amplitude );
   }
 
-  boolean dentro(float x2,float puntos,float y2){
-    if(x2*2>x-43 && x2*2<x+43&& y2 < height-30){
-        this.puntos+=puntos;
-        return true;
-    }
-    return false;
+  void noteOn( float duration )
+  {
+    ampEnv.activate( duration, 0.5f, 0 );
+    wave.patch( nota );
+  }
+
+  void noteOff()
+  {
+    wave.unpatch( nota );
   }
 }
+
+
 ```
 
 
+- En esta clase, nos encargamos de generar el dezplazamiento de los rectangulos que generan los sonidos, y de paso nos ayudamos para saber si hubo colisión.
 
 ```
 
 
-class objeto {
-  PShape s;
-  float x, y;
-  float speed,radio,puntos;
-  boolean flag;
-  Marcador cesta;
-
-  public objeto(float radio,Marcador cesta) {
-    fill(255);
-    this.cesta=cesta;
-    flag=true;
-    puntos=100/radio;
-    this.radio=radio;
-    x = random(width);
-    y = 0; 
-    s = createShape(ELLIPSE,x,y,radio,radio);
-    speed = random(2, 6);
-  }
-  
-  void caida() {
-    if(flag){
-        y += speed;
-    if (y > height-45) {
-        if(cesta.dentro(x,puntos,y))puntos=0;
-
-    }else{
-      if(y>height-15){ 
-        flag=false;
-        x = random(width);
-        y = 0; 
+class Tecla {
+    String nota;
+    boolean flag;
+    int y,x,c1,c2,c3,v;
+    public Tecla(String nota,int v){
+      this.nota=nota;
+      c1=87;
+      c2=35;
+      c3=100;
+      y=0;
+      this.v=v;
+      flag=true;
+      switch((int)random(0,3.5)){
+        case 0:
+              x=10;
+        break;
+                case 1:
+              x=120;
+        break;
+                case 2:
+              x=230;
+        break;
+                case 3:
+              x=340;
+        break;
       }
 
     }
     
-    }
+  void move(){
+   fill(c1,c2,c3);
+  rect(x,y,90,100,0);
+  y+=v;
+    
 
   }
   
-  void display() {
-    pushMatrix();
-    translate(x, y);
-    shape(s);
-    popMatrix();
+  int getY(){
+  return y;
+  
+  }
+    int getX(){
+  return x;
+  
+  }
+  
+  
+  String getSonido(){
+    return nota;
+  
+  }
+  
+  void setColor(int a,int b,int c){
+    if(flag){
+      c1=a;
+      c2=b;
+      c3=c;
+      flag=false;
+    }
   }
 }
 ```
 
 
+- Para la generación de las notas hemos creado un ArrayList al cual se le van añadiendo, cada cierta cantidad de frames, más notas musicales. Al realizar mediante la ejecución de un hilo podemos mantener la misma llamada en todo caso y da la sensación de que vienen en fila. Cuando una nota ha sido usada o se ha pasado del limite de altura permitido, se elimina.
 
 
 ### Instrucciones
-  - Enter - Empezar/Terminar entrenamiento.
+  - Enter - Empezar/Terminar juego.
+  - A | S | D | F | - teclas del piano.
+  
 
 
